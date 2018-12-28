@@ -1,0 +1,102 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Template to create Mariadb RDS'
+
+Parameters:
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    ConstraintDescription: must contain minumum 6 characters
+
+Mappings:
+  RdsConfig:
+    dev:
+      DBInstanceClass: db.t2.small
+      StorageType: gp2
+      AllocatedStorage: 10
+      InstanceName: enegicosdev
+      DBName: enegicosdev
+      MasterUsername: dbmaster
+
+Resources:
+  MariaRDSDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: !FindInMap [RdsConfig, dev, 'DBInstanceClass']
+      StorageType: !FindInMap [RdsConfig, dev, 'StorageType']
+      AllocatedStorage: !FindInMap [RdsConfig, dev, 'AllocatedStorage']
+      Engine: mariadb
+      DBName: !FindInMap [RdsConfig, dev, 'DBName']
+      MasterUsername: !FindInMap [RdsConfig, dev, 'MasterUsername']
+      MasterUserPassword: !Ref DBPassword
+      MultiAZ: 'false'
+  DBHostName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/EnvVars/dev/DBEndpoint'
+      Type: String
+      Value: !GetAtt MariaRDSDB.Endpoint.Address
+      Description: "Database instance end point"
+  DBName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/EnvVars/dev/DBName'
+      Type: String
+      Value: !FindInMap [RdsConfig, dev, 'DBName']
+      Description: "Database name."
+  DBMasterUsername:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/EnvVars/dev/DBMasterUsername'
+      Type: String
+      Value: !FindInMap [RdsConfig, dev, 'MasterUsername']
+      Description: "Database master username."
+  DatabasePassword:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/EnvVars/dev/DBPassword'
+      Type: String
+      Value: !Ref DBPassword
+      Description: "Database password."
+  DBPort:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/EnvVars/dev/DBPort'
+      Type: String
+      Value: !GetAtt MariaRDSDB.Endpoint.Port
+      Description: "Database instance port."
+  DBcreationTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: "MariaCreationTopic"
+  EventSubscription:
+    Type: "AWS::RDS::EventSubscription"
+    Properties: 
+      EventCategories:
+        - "creation"
+      SnsTopicArn: !Ref DBcreationTopic
+      SourceIds: 
+        - !Ref MariaRDSDB
+      SourceType: "db-instance"
+  
+Outputs:
+  MariaDBName:
+    Value: !FindInMap [RdsConfig, dev, 'DBName']
+
+  MariaDBUsername:
+    Value: !FindInMap [RdsConfig, dev, 'MasterUsername']
+
+  MariaDBPassword:
+    Value: !Ref DBPassword
+
+  DBHostName:
+    Value: !GetAtt MariaRDSDB.Endpoint.Address
+
+  DBPort:
+    Value: !GetAtt MariaRDSDB.Endpoint.Port
+
+  DBcreationTopic:
+    Value: !Ref DBcreationTopic

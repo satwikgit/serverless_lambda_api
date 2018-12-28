@@ -1,0 +1,259 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: energicos-test # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+plugins:
+  - serverless-openapi-documentation
+
+custom:
+  documentation: ${file(serverless.doc.yml):documentation}
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: us-east-1
+  environment: ${file(env.yml):${self:provider.stage}}
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - rds:*
+      - sts:*
+      - cognito-idp:*
+    Resource: "*"
+  versionFunctions: false
+
+    # USERPOOL: 'arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_YGerxhb3p'
+    # DB_NAME: 
+    #   'Fn::ImportValue': MariaDBName
+    # DB_USER: 
+    #   'Fn::ImportValue': MariaDBUsername
+    # DB_PASS: 
+    #   'Fn::ImportValue': MariaDBPassword
+    
+
+functions:
+  PostDBCreate:
+    handler: handler.PostDBCreate
+
+  list:
+    handler: handler.list
+    events:
+      - http:
+          path: accounts/
+          method: GET
+          cors: true
+          authorizer: ${file(env.yml):${self:provider.stage}.COGNITO_USER_POOL_ID}
+          documentation:
+            summary: "Fetch Accounts"
+            description: "Fetch Accounts"
+            queryParams:
+            - name: "account name"
+              description: "The user's account name"
+              schema:
+                type: "string"
+            requestHeaders:
+            - name: "Authorization"
+              description: "Authorization token"
+              schema:
+                type: "string"
+            methodResponses:
+            - statusCode: 200
+              responseBody:
+                description: "Account objects"
+              responseModels:
+                application/json: "ListDocumentResponse"
+            - statusCode: 500
+              responseBody:
+                description: "An error message when creating an account"
+              responseModels:
+                application/json: "ErrorResponse"
+
+  create: 
+    handler: handler.create
+    events:
+      - http:
+          path: account/create
+          method: POST
+          cors: true
+          authorizer: ${file(env.yml):${self:provider.stage}.COGNITO_USER_POOL_ID}
+          documentation:
+            summary: "Create Account"
+            description: "Creates an Account"
+            requestBody:
+              description: "A Account information object"
+            requestModels:
+              application/json: PutDocumentRequest
+            parameters:
+              requestHeaders:
+              - name: "Authorization"
+                description: "Authorization token"
+                schema:
+                  type: "string"
+            methodResponses:
+            - statusCode: 200
+              responseBody:
+                description: "An Account object"
+              responseModels:
+                application/json: DocumentResponse
+            - statusCode: 500
+              responseBody:
+                description: "An error message when creating an account"
+              responseModels:
+                application/json: "ErrorResponse"
+
+  read: 
+    handler: handler.read
+    events:
+      - http:
+          path: account/{id}
+          method: GET
+          cors: true
+          authorizer: ${file(env.yml):${self:provider.stage}.COGNITO_USER_POOL_ID}
+          documentation:
+            summary: "Fetch Account"
+            description: "Fetch an Account"
+            pathParams:
+            - name: accountid
+              description: The id for a account to get
+              schema:
+                type: string
+                pattern: "^[-a-z0-9_]+$"
+            requestHeaders:
+            - name: "Authorization"
+              description: "Authorization token"
+              schema:
+                type: "string"
+            methodResponses:
+            - statusCode: 200
+              responseBody:
+                description: "An Account object"
+              responseModels:
+                application/json: "DocumentResponse"
+            - statusCode: 500
+              responseBody:
+                description: "An error message when creating an account"
+              responseModels:
+                application/json: "ErrorResponse"
+
+  update: 
+    handler: handler.update
+    events:
+      - http:
+          path: account/update/{id}
+          method: PUT
+          cors: true
+          authorizer: ${file(env.yml):${self:provider.stage}.COGNITO_USER_POOL_ID}
+          documentation:
+            summary: "Update Account"
+            description: "Update an Account"
+            pathParams:
+            - name: accountid
+              description: The id for a account to get
+              schema:
+                type: string
+                pattern: "^[-a-z0-9_]+$"
+            requestBody:
+              description: "A Account information object"
+            requestModels:
+              application/json: "PutDocumentRequest"
+            requestHeaders:
+            - name: "Authorization"
+              description: "Authorization token"
+              schema:
+                type: "string"
+            methodResponses:
+            - statusCode: 200
+              responseBody:
+                description: "An Account object"
+              responseModels:
+                application/json: "DocumentResponse"
+            - statusCode: 500
+              responseBody:
+                description: "An error message when creating an account"
+              responseModels:
+                application/json: "ErrorResponse"
+
+  delete: 
+    handler: handler.delete
+    events:
+      - http:
+          path: account/delete/{id}
+          method: DELETE
+          cors: true
+          authorizer: ${file(env.yml):${self:provider.stage}.COGNITO_USER_POOL_ID}
+          documentation:
+            summary: "Delete Account"
+            description: "Delete an Account"
+            pathParams:
+            - name: accountid
+              description: The id for a account to get
+              schema:
+                type: string
+                pattern: "^[-a-z0-9_]+$"
+            requestHeaders:
+            - name: "Authorization"
+              description: "Authorization token"
+              schema:
+                type: "string"
+            methodResponses:
+            - statusCode: 200
+              responseBody:
+                description: "Delete status"
+              responseModels:
+                description: "status string"
+                contentType: application/json
+                schema:
+                  $schema: http://json-schema.org/draft-04/schema#
+                  properties:
+                    status:
+                      type: string
+            - statusCode: 500
+              responseBody:
+                description: "An error message when creating an account"
+              responseModels:
+                application/json: "ErrorResponse"
+
+
+# you can add CloudFormation resource templates here
+resources:
+  Resources: 
+    GatewayResponse401:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+        ResponseType: UNAUTHORIZED
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'          
+    
+    GatewayResponse403:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+        ResponseType: ACCESS_DENIED
+        RestApiId: 
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '403'
+

@@ -1,0 +1,37 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Core Stack'
+
+Parameters:
+  DBPassword:
+    Description: The database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    Default: 'PowerUserPass'
+    ConstraintDescription: must contain minumum 6 characters
+
+Resources:
+  MariaRDS:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-south-1.amazonaws.com/stucredtestcloudformationstack/MariaRDS.yml
+      Parameters:
+        DBPassword: 
+          Ref: DBPassword
+  CognitoUserPool:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-south-1.amazonaws.com/stucredtestcloudformationstack/CognitoUserPool.yml
+  CrudLambda:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.ap-south-1.amazonaws.com/stucredtestcloudformationstack/lambda.yml
+      Parameters:
+        MariaDBName: !GetAtt MariaRDS.Outputs.MariaDBName
+        MariaDBUsername: !GetAtt MariaRDS.Outputs.MariaDBUsername
+        MariaDBPassword: !GetAtt MariaRDS.Outputs.MariaDBPassword
+        DBHostName: !GetAtt MariaRDS.Outputs.DBHostName
+        DBcreationTopic: !GetAtt MariaRDS.Outputs.DBcreationTopic
+        DBPort: !GetAtt MariaRDS.Outputs.DBPort
+        CognitoUserPoolId: !GetAtt CognitoUserPool.Outputs.CognitoUserPoolId

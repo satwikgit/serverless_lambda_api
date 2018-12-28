@@ -1,0 +1,793 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The AWS CloudFormation template for this Serverless application
+Parameters:
+  ServerlessDeploymentBucket: 
+    Type: String
+    Default: stucredtestlambdacf
+  ServerlessDeploymentBucketkey:
+    Type: String
+    Default: energicos-test.zip
+  MariaDBName:
+    Type: String
+  MariaDBUsername:
+    Type: String
+  MariaDBPassword:
+    Type: String
+  DBHostName:
+    Type: String
+  DBPort:
+    Type: String
+  CognitoUserPoolId:
+    Type: String
+  DBcreationTopic:
+    Type: String
+
+Resources:
+  PostDBCreateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-PostDBCreate
+  ListLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-list
+  CreateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-create
+  ReadLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-read
+  UpdateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-update
+  DeleteLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-delete
+  IamRoleLambdaExecution:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Join 
+            - '-'
+            - - dev
+              - energicos-test
+              - lambda
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                Resource:
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-PostDBCreate:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-list:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-create:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-read:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-update:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-delete:*
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-PostDBCreate:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-list:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-create:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-read:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-update:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-delete:*:*
+              - Effect: Allow
+                Action:
+                  - 'rds:*'
+                  - 'sts:*'
+                  - 'sns:*'
+                  - 'cognito-idp:*'
+                Resource: '*'
+      Path: /
+      RoleName: !Join 
+        - '-'
+        - - energicos-test
+          - dev
+          - us-east-1
+          - lambdaRole
+  PostDBCreateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-PostDBCreate
+      Handler: handler.PostDBCreate
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - PostDBCreateLogGroup
+      - IamRoleLambdaExecution
+  ListLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-list
+      Handler: handler.list
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - ListLogGroup
+      - IamRoleLambdaExecution
+  CreateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-create
+      Handler: handler.create
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - CreateLogGroup
+      - IamRoleLambdaExecution
+  ReadLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-read
+      Handler: handler.read
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - ReadLogGroup
+      - IamRoleLambdaExecution
+  UpdateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-update
+      Handler: handler.update
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - UpdateLogGroup
+      - IamRoleLambdaExecution
+  DeleteLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-delete
+      Handler: handler.delete
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: >-
+            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - DeleteLogGroup
+      - IamRoleLambdaExecution
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: dev-energicos-test
+      EndpointConfiguration:
+        Types:
+          - EDGE
+  ApiGatewayResourceAccounts:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt 
+        - ApiGatewayRestApi
+        - RootResourceId
+      PathPart: accounts
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccount:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !GetAtt 
+        - ApiGatewayRestApi
+        - RootResourceId
+      PathPart: account
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountCreate:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccount
+      PathPart: create
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountIdVar:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccount
+      PathPart: '{id}'
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountUpdate:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccount
+      PathPart: update
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountUpdateIdVar:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccountUpdate
+      PathPart: '{id}'
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountDelete:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccount
+      PathPart: delete
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayResourceAccountDeleteIdVar:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      ParentId: !Ref ApiGatewayResourceAccountDelete
+      PathPart: '{id}'
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountsOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
+          ResponseModels: {}
+      RequestParameters: {}
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,GET'''
+              method.response.header.Access-Control-Allow-Credentials: '''false'''
+            ResponseTemplates:
+              application/json: ''
+      ResourceId: !Ref ApiGatewayResourceAccounts
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountCreateOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
+          ResponseModels: {}
+      RequestParameters: {}
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,POST'''
+              method.response.header.Access-Control-Allow-Credentials: '''false'''
+            ResponseTemplates:
+              application/json: ''
+      ResourceId: !Ref ApiGatewayResourceAccountCreate
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountIdVarOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
+          ResponseModels: {}
+      RequestParameters: {}
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,GET'''
+              method.response.header.Access-Control-Allow-Credentials: '''false'''
+            ResponseTemplates:
+              application/json: ''
+      ResourceId: !Ref ApiGatewayResourceAccountIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountUpdateIdVarOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
+          ResponseModels: {}
+      RequestParameters: {}
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,PUT'''
+              method.response.header.Access-Control-Allow-Credentials: '''false'''
+            ResponseTemplates:
+              application/json: ''
+      ResourceId: !Ref ApiGatewayResourceAccountUpdateIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountDeleteIdVarOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      MethodResponses:
+        - StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
+          ResponseModels: {}
+      RequestParameters: {}
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{statusCode:200}'
+        IntegrationResponses:
+          - StatusCode: '200'
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'
+              method.response.header.Access-Control-Allow-Methods: '''OPTIONS,DELETE'''
+              method.response.header.Access-Control-Allow-Credentials: '''false'''
+            ResponseTemplates:
+              application/json: ''
+      ResourceId: !Ref ApiGatewayResourceAccountDeleteIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+  ApiGatewayMethodAccountsGet:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceAccounts
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - ListLambdaFunction
+              - Arn
+            - /invocations
+      MethodResponses: []
+    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+  ApiGatewayMethodAccountCreatePost:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: POST
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceAccountCreate
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - CreateLambdaFunction
+              - Arn
+            - /invocations
+      MethodResponses: []
+    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+  ApiGatewayMethodAccountIdVarGet:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceAccountIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - ReadLambdaFunction
+              - Arn
+            - /invocations
+      MethodResponses: []
+    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+  ApiGatewayMethodAccountUpdateIdVarPut:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: PUT
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceAccountUpdateIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - UpdateLambdaFunction
+              - Arn
+            - /invocations
+      MethodResponses: []
+    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+  ApiGatewayMethodAccountDeleteIdVarDelete:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: DELETE
+      RequestParameters: {}
+      ResourceId: !Ref ApiGatewayResourceAccountDeleteIdVar
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - DeleteLambdaFunction
+              - Arn
+            - /invocations
+      MethodResponses: []
+    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+  1UnderscorekovFphcETApiGatewayAuthorizer:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      IdentitySource: method.request.header.Authorization
+      Name: 1_kovFphcET
+      RestApiId: !Ref ApiGatewayRestApi
+      Type: COGNITO_USER_POOLS
+      ProviderARNs:
+        - >-
+          arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+  ApiGatewayDeployment1546006102964:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: dev
+    DependsOn:
+      - ApiGatewayMethodAccountsGet
+      - ApiGatewayMethodAccountCreatePost
+      - ApiGatewayMethodAccountIdVarGet
+      - ApiGatewayMethodAccountUpdateIdVarPut
+      - ApiGatewayMethodAccountDeleteIdVarDelete
+  ListLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - ListLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  CreateLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - CreateLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  ReadLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - ReadLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  UpdateLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - UpdateLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  DeleteLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - DeleteLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  GatewayResponse401:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      ResponseType: UNAUTHORIZED
+      RestApiId: !Ref ApiGatewayRestApi
+      StatusCode: '401'
+  GatewayResponse403:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      ResponseType: ACCESS_DENIED
+      RestApiId: !Ref ApiGatewayRestApi
+      StatusCode: '403'
+
+  PostDBSnsSubscriptionNotification:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref DBcreationTopic 
+      Protocol: lambda
+      Endpoint: !GetAtt 
+        - PostDBCreateLambdaFunction
+        - Arn
+
+  PostDBLambdaPermissionNotificationSNS:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !GetAtt
+        -  PostDBCreateLambdaFunction
+        -  Arn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref DBcreationTopic
+
+Outputs:
+  ServerlessDeploymentBucketName:
+    Value: !Ref ServerlessDeploymentBucket
+  ServiceEndpoint:
+    Description: URL of the service endpoint
+    Value: !Join 
+      - ''
+      - - 'https://'
+        - !Ref ApiGatewayRestApi
+        - .execute-api.us-east-1.amazonaws.com/dev

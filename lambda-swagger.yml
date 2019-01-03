@@ -1,0 +1,423 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The AWS CloudFormation template for this Serverless application 
+
+Parameters:
+  ServerlessDeploymentBucket: 
+    Type: String
+    Default: stucredtestlambdacf
+  ServerlessDeploymentBucketkey:
+    Type: String
+    Default: energicos-test.zip
+  MariaDBName:
+    Type: String
+  MariaDBUsername:
+    Type: String
+  MariaDBPassword:
+    Type: String
+  DBHostName:
+    Type: String
+  DBPort:
+    Type: String
+  CognitoUserPoolId:
+    Type: String
+  DBcreationTopic:
+    Type: String
+
+Resources:
+  PostDBCreateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-PostDBCreate
+  ListLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-list
+  CreateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-create
+  ReadLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-read
+  UpdateLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-update
+  DeleteLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: /aws/lambda/energicos-test-dev-delete
+  IamRoleLambdaExecution:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Join 
+            - '-'
+            - - dev
+              - energicos-test
+              - lambda
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogStream'
+                Resource:
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-PostDBCreate:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-list:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-create:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-read:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-update:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-delete:*
+              - Effect: Allow
+                Action:
+                  - 'logs:PutLogEvents'
+                Resource:
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-PostDBCreate:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-list:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-create:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-read:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-update:*:*
+                  - !Sub >-
+                    arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/energicos-test-dev-delete:*:*
+              - Effect: Allow
+                Action:
+                  - 'rds:*'
+                  - 'sts:*'
+                  - 'sns:*'
+                  - 'cognito-idp:*'
+                Resource: '*'
+      Path: /
+      RoleName: !Join 
+        - '-'
+        - - energicos-test
+          - dev
+          - us-east-1
+          - lambdaRole
+  PostDBCreateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-PostDBCreate
+      Handler: handler.PostDBCreate
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - PostDBCreateLogGroup
+      - IamRoleLambdaExecution
+  ListLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-list
+      Handler: handler.list
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - ListLogGroup
+      - IamRoleLambdaExecution
+  CreateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-create
+      Handler: handler.create
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - CreateLogGroup
+      - IamRoleLambdaExecution
+  ReadLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-read
+      Handler: handler.read
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - ReadLogGroup
+      - IamRoleLambdaExecution
+  UpdateLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-update
+      Handler: handler.update
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - UpdateLogGroup
+      - IamRoleLambdaExecution
+  DeleteLambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !Ref ServerlessDeploymentBucket
+        S3Key: !Ref ServerlessDeploymentBucketkey
+      FunctionName: energicos-test-dev-delete
+      Handler: handler.delete
+      MemorySize: 1024
+      Role: !GetAtt 
+        - IamRoleLambdaExecution
+        - Arn
+      Runtime: nodejs6.10
+      Timeout: 6
+      Environment:
+        Variables:
+          STAGE: dev
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          DB_HOSTNAME: !Ref DBHostName
+          DB_NAME: !Ref MariaDBName
+          DB_USERNAME: !Ref MariaDBUsername
+          DB_PASSWORD: !Ref MariaDBPassword
+          DB_PORT: !Ref DBPort
+          DB_DIALECT: maria
+          REGION: us-east-1
+          LOG_LEVEL: debug
+          TEMP_CREDS_SESSION_DURATION: 900
+    DependsOn:
+      - DeleteLogGroup
+      - IamRoleLambdaExecution
+  ApiGatewayRestApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Description: "testApi"
+      Name: dev-energicos-test
+      Body:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Sub "s3://stucredtestcloudformationstack/swagger.yml" 
+      FailOnWarnings: true
+
+  ListLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - ListLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  CreateLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - CreateLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  ReadLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - ReadLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  UpdateLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - UpdateLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  DeleteLambdaPermissionApiGateway:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt 
+        - DeleteLambdaFunction
+        - Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ApiGatewayRestApi
+          - /*/*
+  PostDBSnsSubscriptionNotification:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref DBcreationTopic 
+      Protocol: lambda
+      Endpoint: !GetAtt 
+        - PostDBCreateLambdaFunction
+        - Arn
+
+  PostDBLambdaPermissionNotificationSNS:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !GetAtt
+        -  PostDBCreateLambdaFunction
+        -  Arn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref DBcreationTopic
+
+Outputs:
+  ServerlessDeploymentBucketName:
+    Value: !Ref ServerlessDeploymentBucket
+  ServiceEndpoint:
+    Description: URL of the service endpoint
+    Value: !Join 
+      - ''
+      - - 'https://'
+        - !Ref ApiGatewayRestApi
+        - .execute-api.us-east-1.amazonaws.com/dev

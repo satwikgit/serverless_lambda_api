@@ -26,7 +26,7 @@ Resources:
   CrudLambda:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://s3.ap-south-1.amazonaws.com/stucredtestcloudformationstack/lambda.yml
+      TemplateURL: https://s3.ap-south-1.amazonaws.com/stucredtestcloudformationstack/lambda-swagger.yml
       Parameters:
         MariaDBName: !GetAtt MariaRDS.Outputs.MariaDBName
         MariaDBUsername: !GetAtt MariaRDS.Outputs.MariaDBUsername

@@ -1,0 +1,33 @@
+SetUp:
+
+the core yml calls nested yml in the order of 
+MariaRDS.yml, CognitoUserPool.yml, lambda-swagger.yml which inturn calls swagger.yml.
+
+1) have a s3 bucket say {bucket-name}
+
+2) change the instances of s3 buckets in 
+  1) core.yml - locations of nested templates
+  2) lambda-swagger.yml - change the params of 
+      ServerlessDeploymentBucket: 
+      ServerlessDeploymentBucketkey
+    to point to the bucket and the lambda zip file.
+
+3) upload the following files to s3
+  1) core.yml
+  2) MariaRDS.yml
+  3) CognitoUserPool.yml
+  4) lambda-swagger.yml
+  5) swagger.yml
+
+create a cloudformation with core.yml to create the db, cog pool, lambda functions, and api gateway in addition to permissions needed to access the lot.
+
+the outputs will be 
+  ServiceEndpoint 
+which will be the endpoint of the apigateway. 
+and 
+  CognitoUserPoolId
+the arn of the cognito pool created. 
+
+to access the endpoints you will have to create a user in the CognitoUserPoolId and populate the header of the http request with 
+  'Authorization'
+having the jwt token of a valid user session from the cognito pool.

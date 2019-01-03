@@ -131,9 +131,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -163,9 +161,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -195,9 +191,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -227,9 +221,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -259,9 +251,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -291,9 +281,7 @@ Resources:
       Environment:
         Variables:
           STAGE: dev
-          COGNITO_USER_POOL_ID: >-
-            arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
-          COGNITO_USER_POOL_APP_ID: 7nc10l5gsg2p8d16v0vqvv8d79
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           DB_HOSTNAME: !Ref DBHostName
           DB_NAME: !Ref MariaDBName
           DB_USERNAME: !Ref MariaDBUsername
@@ -524,7 +512,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ApiKeyRequired: false
       AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      AuthorizerId: !Ref CrudApiGatewayAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -538,7 +526,7 @@ Resources:
               - Arn
             - /invocations
       MethodResponses: []
-    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+    DependsOn: CrudApiGatewayAuthorizer
   ApiGatewayMethodAccountCreatePost:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -548,7 +536,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ApiKeyRequired: false
       AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      AuthorizerId: !Ref CrudApiGatewayAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -562,7 +550,7 @@ Resources:
               - Arn
             - /invocations
       MethodResponses: []
-    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+    DependsOn: CrudApiGatewayAuthorizer
   ApiGatewayMethodAccountIdVarGet:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -572,7 +560,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ApiKeyRequired: false
       AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      AuthorizerId: !Ref CrudApiGatewayAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -586,7 +574,7 @@ Resources:
               - Arn
             - /invocations
       MethodResponses: []
-    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+    DependsOn: CrudApiGatewayAuthorizer
   ApiGatewayMethodAccountUpdateIdVarPut:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -596,7 +584,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ApiKeyRequired: false
       AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      AuthorizerId: !Ref CrudApiGatewayAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -610,7 +598,7 @@ Resources:
               - Arn
             - /invocations
       MethodResponses: []
-    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
+    DependsOn: CrudApiGatewayAuthorizer
   ApiGatewayMethodAccountDeleteIdVarDelete:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -620,7 +608,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       ApiKeyRequired: false
       AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref 1UnderscorekovFphcETApiGatewayAuthorizer
+      AuthorizerId: !Ref CrudApiGatewayAuthorizer
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
@@ -634,8 +622,8 @@ Resources:
               - Arn
             - /invocations
       MethodResponses: []
-    DependsOn: 1UnderscorekovFphcETApiGatewayAuthorizer
-  1UnderscorekovFphcETApiGatewayAuthorizer:
+    DependsOn: CrudApiGatewayAuthorizer
+  CrudApiGatewayAuthorizer:
     Type: 'AWS::ApiGateway::Authorizer'
     Properties:
       IdentitySource: method.request.header.Authorization
@@ -643,8 +631,7 @@ Resources:
       RestApiId: !Ref ApiGatewayRestApi
       Type: COGNITO_USER_POOLS
       ProviderARNs:
-        - >-
-          arn:aws:cognito-idp:us-east-1:383322093488:userpool/us-east-1_kovFphcET
+        - !Ref CognitoUserPoolId
   ApiGatewayDeployment1546006102964:
     Type: 'AWS::ApiGateway::Deployment'
     Properties:

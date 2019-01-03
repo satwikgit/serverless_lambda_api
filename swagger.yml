@@ -1,0 +1,217 @@
+swagger: "2.0"
+info:
+  title: 'energicos test'
+  description: 'A crud api for accounts'
+  version: 79a236f0-09ed-40c0-81ac-3cc9ef27dc1d
+
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    required:
+      - code
+      - message
+
+  DocumentResponse:
+    properties:
+      AccountObject:
+        type: object
+        properties:
+          Name:
+            type: string
+  ListDocumentResponse:
+    type: array
+    items:
+      type: object
+      properties:
+        AccountObject:
+          type: object
+          properties:
+            Name:
+              type: string
+  PutDocumentRequest:
+      properties:
+        AccountObject:
+          type: object
+          properties:
+            Name:
+              type: string
+
+securityDefinitions:
+  cognitoAuth:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "cognito_user_pools"
+    x-amazon-apigateway-authorizer:
+      providerARNs:
+      - Fn::Sub: ${CognitoUserPoolId}
+      type: "cognito_user_pools"
+
+security:
+  - cognitoAuth: []
+
+basePath: "/accountsapi"
+schemes:
+- "https"
+paths:
+  /accounts/:
+    get:
+      operationId: list
+      summary: Fetch Accounts
+      description: Fetch all Accounts
+      parameters:
+        - in: query
+          name: offset
+          type: integer
+          description: The number of items to skip 
+        - in: query
+          name: limit
+          type: integer
+          description: The numbers of items to return
+        - in: query
+          name: accountName
+          type: string
+          description: name of the account to search for
+      responses:
+        200:
+          description: Accounts list
+          schema:
+            $ref: '#/definitions/ListDocumentResponse'
+        500:
+          description: An error message when creating an account
+          schema:
+            $ref: '#/definitions/Error'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListLambdaFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+
+  /account/create:
+    post:
+      operationId: create
+      summary: Create Account
+      description: Creates an Account
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: account
+          description: The account to create.
+          schema:
+            $ref: "#/definitions/PutDocumentRequest" 
+      responses:
+        200:
+          description: An Account object
+          schema:
+            $ref: '#/definitions/DocumentResponse'
+        500:
+          description: An error message when creating an account
+          schema:
+            $ref: '#/definitions/Error'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateLambdaFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+
+  /account/{id}:
+    get:
+      operationId: read
+      summary: Read Account
+      description: Read an Account
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UID of the Account
+      responses:
+        200:
+          description: An Account object
+          schema:
+            $ref: '#/definitions/DocumentResponse'
+        500:
+          description: An error message when creating an account
+          schema:
+            $ref: '#/definitions/Error'
+
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReadLambdaFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+
+  /account/update/{id}:
+    put:
+      operationId: update
+      summary: Update Account
+      description: Update an Account
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: account
+          description: The account to create.
+          schema:
+            $ref: "#/definitions/PutDocumentRequest"
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UID of the Account
+      responses:
+        200:
+          description: An Account object
+          schema:
+            $ref: '#/definitions/DocumentResponse'
+        500:
+          description: An error message when creating an account
+          schema:
+            $ref: '#/definitions/Error'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateLambdaFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+
+  /account/delete/{id}:
+    delete:
+      operationId: delete
+      summary: Delete Account
+      description: Delete an Account
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: UID of the Account
+      responses:
+        200:
+          description: Delete status
+        500:
+          description: An error message when creating an account
+          schema:
+            $ref: '#/definitions/Error'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteLambdaFunction.Arn}/invocations
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        type: "aws_proxy"
+
+x-amazon-apigateway-gateway-responses:
+  EXPIRED_TOKEN:
+    statusCode: 401
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+      gatewayresponse.header.Access-Control-Allow-Headers: "'*'"

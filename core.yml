@@ -10,6 +10,10 @@ Parameters:
     MaxLength: '41'
     Default: 'PowerUserPass'
     ConstraintDescription: must contain minumum 6 characters
+  ServerlessDeploymentBucket:
+    Description: The database admin account password
+    Type: String
+    Default: stucredtestlambdacf
 
 Resources:
   MariaRDS:
@@ -35,3 +39,14 @@ Resources:
         DBcreationTopic: !GetAtt MariaRDS.Outputs.DBcreationTopic
         DBPort: !GetAtt MariaRDS.Outputs.DBPort
         CognitoUserPoolId: !GetAtt CognitoUserPool.Outputs.CognitoUserPoolId
+        ServerlessDeploymentBucket:
+          Ref: ServerlessDeploymentBucket
+
+
+Outputs:
+  ServiceEndpoint:
+    Description: URL of the service endpoint
+    Value: !GetAtt CrudLambda.Outputs.ServiceEndpoint
+  CognitoUserPoolId:
+    Description: Cognito User pool
+    Value: !GetAtt CognitoUserPool.Outputs.CognitoUserPoolId

@@ -77,6 +77,8 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
   5) swagger.yml
   6) energicos-test.zip
 
+  ![Alt text](https://user-images.githubusercontent.com/8939030/50765926-7abec980-129d-11e9-8844-479d679a8673.png?raw=true "S3")
+
   the following command lets you copy all yml files energicos-test.zip in your folder to the s3 bucket
   ```
     aws s3 cp ./ s3://{s3-bucket}/ --recursive --exclude "*" --include "*.yml" --include "energicos-test.zip"
@@ -88,13 +90,19 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
 #### From Console 
   1) click on create stack button to start the process
   2) Specify an Amazon S3 template URL in Choose a template - specify the s3 url for core.yml.
+  ![Alt text](https://user-images.githubusercontent.com/8939030/50765925-7a263300-129d-11e9-8218-755b23fe66b2.png?raw=true "Console")
+  
   3) fillout the parameter values 
     - stack name: any
     - DBPassword: password to the db to be created
     - ServerlessDeploymentBucket: {s3-bucket}
+  ![Alt text](https://user-images.githubusercontent.com/8939030/50765924-7a263300-129d-11e9-99f5-a8a3298e5fc7.png?raw=true "Params")
+
   4) give the necessary permissions as needed to create the stacks.
   5) It will take a while for the stack to complete 
   6) Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
+  ![Alt text](https://user-images.githubusercontent.com/8939030/50765923-7a263300-129d-11e9-95a8-a447abba507e.png?raw=true "Outputs")
+  
 
 #### From CommandLine
   1)  execute the following command 

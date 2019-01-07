@@ -85,29 +85,31 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
 
 
 ### 4) Deploying the CF template 
-  1) From Console 
-    - click on create stack button to start the process
-    - Specify an Amazon S3 template URL in Choose a template - specify the s3 url for core.yml.
-    - fillout the parameter values 
-      - stack name: any
-      - DBPassword: password to the db to be created
-      - ServerlessDeploymentBucket: {s3-bucket}
-    - give the necessary permissions as needed to create the stacks.
-    - It will take a while for the stack to complete 
-    - Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
-  2) From CommandLine
-    - execute the following command - do name the stack to your choice, and pass the appropriate values 
+#### From Console 
+  1) click on create stack button to start the process
+  2) Specify an Amazon S3 template URL in Choose a template - specify the s3 url for core.yml.
+  3) fillout the parameter values 
+    - stack name: any
+    - DBPassword: password to the db to be created
+    - ServerlessDeploymentBucket: {s3-bucket}
+  4) give the necessary permissions as needed to create the stacks.
+  5) It will take a while for the stack to complete 
+  6) Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
 
-    ```
-      aws cloudformation create-stack --stack-name myteststack --template-url {s3-bucket-url}/core.yml --parameters ParameterKey=DBPassword,ParameterValue=SomeGoodPassword ParameterKey=ServerlessDeploymentBucket,ParameterValue={s3-bucket} --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
-    ```
-    - It will take a while for the stack to complete .. you can check the status by
+#### From CommandLine
+  - execute the following command 
+  - do name the stack to your choice, and pass the appropriate values 
 
-    ```
-      aws cloudformation describe-stacks --stack-name myteststack
-    ```
-    
-    - Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
+  ```
+    aws cloudformation create-stack --stack-name myteststack --template-url {s3-bucket-url}/core.yml --parameters ParameterKey=DBPassword,ParameterValue=SomeGoodPassword ParameterKey=ServerlessDeploymentBucket,ParameterValue={s3-bucket} --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+  ```
+  - It will take a while for the stack to complete .. you can check the status by
+
+  ```
+    aws cloudformation describe-stacks --stack-name myteststack
+  ```
+  
+  - Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
 
 ### 5) Accessing the services
 - create user in the newly created cognito pool. 

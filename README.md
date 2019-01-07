@@ -25,7 +25,7 @@ the core.yml calls nested yml in the order listed above. swagger.yml is nested i
 To deploy nested CF templates, the templates need to be uploaded to an s3 bucket first. This is necessary as this is the only way AWS would permit nested stacks to be deployed. 
 
 
-###1) Create an s3 bucket - {s3-bucket}
+### 1) Create an s3 bucket - {s3-bucket}
   No special permissions needed for this example.
   You can leave the default settings of s3 bucket as is.
   You can create an s3 bucket both from console or from command line as follows
@@ -35,7 +35,7 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
   this will give a s3 location 
   the URL to the s3 bucket would be https://s3.{aws-region}.amazonaws.com/{s3-bucket}/
 
-###2) Change the URLs of nested templates in 
+### 2) Change the URLs of nested templates in 
   1) core.yml - locations of nested templates
 
       ```yaml
@@ -69,7 +69,7 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
                   ...
                   ...
       ```
-###3) upload the following files to s3
+### 3) upload the following files to s3
   1) core.yml
   2) MariaRDS.yml
   3) CognitoUserPool.yml
@@ -84,7 +84,7 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
 
 
 
-###4) Deploying the CF template 
+### 4) Deploying the CF template 
   1) From Console: 
     1) click on create stack button to start the process
     2) Specify an Amazon S3 template URL in Choose a template - specify the s3 url for core.yml.
@@ -96,17 +96,20 @@ To deploy nested CF templates, the templates need to be uploaded to an s3 bucket
     5) It will take a while for the stack to complete 
     6) Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
   2) From CommandLine:
-    1)
+    1) execute the following command - do name the stack to your choice, and pass the appropriate values 
+
     ```
       aws cloudformation create-stack --stack-name myteststack --template-url {s3-bucket-url}/core.yml --parameters ParameterKey=DBPassword,ParameterValue=SomeGoodPassword ParameterKey=ServerlessDeploymentBucket,ParameterValue={s3-bucket} --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
     ```
     2) It will take a while for the stack to complete .. you can check the status by
+
     ```
       aws cloudformation describe-stacks --stack-name myteststack
     ```
+    
     3) Once the stack is of CREATE_COMPLETE status, the Outputs tab will have the 'ServiceEndpoint' to access the service deployed. 
 
-###5) Accessing the services
+### 5) Accessing the services
 - create user in the newly created cognito pool. 
 - login with the username and password to have the auth token
 - you can access the service with the auth token in the Authorization token in the header.
